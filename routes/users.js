@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var NodeRSA = require('node-rsa');
 var randomstring = require("randomstring");
+var request = require('request');
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -45,8 +46,30 @@ router.post('/create', function (req, res, next) {
     "private": priKey,
     "public": pubKey
   }
-  qrData = {keys: keys, uid: uid}
   var encrypted = key.encrypt(JSON.stringify(userData), 'base64');
+  var body = {
+    uid: uid,
+    encryptedData: encrypted
+  }
+  var reqOptions = {
+    url: 'http://blockchain.goflo.in:3000/api/User',
+    method: 'POST',
+    headers: {
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify(body)
+  }
+
+  request(reqOptions, function (error, response, body) {
+    console.log('error:', error); // Print the error if one occurred
+    console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+    console.log('body:', body); // Print the HTML for the Google homepage.
+  });
+  qrData = {
+    keys: keys,
+    uid: uid
+  }
+
   res.render('create-success', {
     qrData: JSON.stringify(qrData),
     uid: uid
